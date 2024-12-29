@@ -2,20 +2,19 @@ package controllers
 
 import (
 	"net/http"
-
 	"github.com/labstack/echo/v4"
-
 	"messagingapp/commons"
-	m"messagingapp/models"
-	"messagingapp/data"
+	"messagingapp/models"
+	"messagingapp/repository"
 )
 
 var (
-	ur = data.UserRep{}
+	r = repository.NewUserRepositoryDB()
 )
 
+
 func Register(c echo.Context) error {
-	user := new(m.User)
+	user := new(models.User)
 	c.Bind(user) // verifier si les primarykey qui sont respectés: if user.Email in db -> signin -> a mettre au testingcase
 	if err := c.Validate(user); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"message": "invalid data"+err.Error()})
@@ -27,7 +26,7 @@ func Register(c echo.Context) error {
 	}
 	user.Password = hash
 
-	err = ur.Create(user)
+	err = r.CreateUser(user)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"message": "cannot create user"})
 	}
@@ -42,14 +41,14 @@ func Register(c echo.Context) error {
 }
 
 func Login(c echo.Context) error {
-	userForm := new(m.User)
+	userForm := new(models.User)
 	c.Bind(&userForm)
 	err := c.Validate(&userForm)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"message": "invalid data"+err.Error()})
 	}
 
-	user, err := ur.Find(userForm.Email)
+	user, err := r.GetUser(userForm.Email)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, echo.Map{"message": "user not found"})
 	}

@@ -7,10 +7,10 @@ import (
 type (
 
 	User struct {
-		ID 			uint 	`json:"id" gorm:"primaryKey"`
-		Name 		string 	`json:"name" gorm:"not null"`
-		Password 	string 	`json:"password" gorm:"not null"`
-		Email 		string 	`json:"email" gorm:"unique; not null"`
+		ID 			uint 	`json:"id"`
+		Name 		string 	`json:"name"`
+		Password 	string 	`json:"password"`
+		Email 		string 	`json:"email"`
 	}
 
 	Message struct {
@@ -21,10 +21,10 @@ type (
 		CreatedAt 	time.Time 	`json:"created_at"`
 	}
 
-	ChatRoom struct {
-		UUID 		uint 		`bson:"_uuid,omitenpty" json:"uuid"`
-		Messages 	[]Message 	`json:"messages"`
-		Users 		[]User 		`json:"users"`
+	Chat struct {
+		UUID 			string 		`bson:"_uuid,omitenpty" json:"uuid"`
+		MessagesIDs 	[]uint 		`json:"messages"`
+		UserIDs			[]uint 		`json:"users"` // uint or user depend of the future needs
 		// private / group ?
 	}
 )

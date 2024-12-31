@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"context"
+	"time"
 )
 
 type MessageRepositoryDB struct {
@@ -25,6 +26,7 @@ func NewMessageRepositoryDB() *MessageRepositoryDB {
 }
 
 func (r *MessageRepositoryDB) CreateMessage(message *models.Message) error {
+	message.CreatedAt = time.Now() // voir si c'est le bon moyen d'enregistrer les dates dans mongo
 	_, err := r.coll.InsertOne(context.TODO(), message)
 	return err
 }

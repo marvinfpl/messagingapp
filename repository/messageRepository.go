@@ -10,36 +10,55 @@ import (
 )
 
 type MessageRepositoryDB struct {
-	coll *mongo.Collection
+	Coll *mongo.Collection
 }
 
 type MessageService interface {
-	CreateMessage(*models.Message) error
-	DeleteMessage(*models.Message) error
-	UpdateMessage(*models.Message) error
+	CreateMessage(models.Message) error
+	DeleteMessage(models.Message) error
+	UpdateMessage(models.Message) error
 }
 
 func NewMessageRepositoryDB() *MessageRepositoryDB {
 	return &MessageRepositoryDB{
-		coll: commons.InitMongo("message"),
+		Coll: commons.InitMongo("message"),
 	}
 }
 
 func (r *MessageRepositoryDB) CreateMessage(message *models.Message) error {
-	message.CreatedAt = time.Now() // voir si c'est le bon moyen d'enregistrer les dates dans mongo
-	_, err := r.coll.InsertOne(context.TODO(), message)
+	message.CreatedAt = time.Now()
+	_, err := r.Coll.InsertOne(context.TODO(), message)
 	return err
 }
 
 func (r *MessageRepositoryDB) DeleteMessage(id uint) error {
 	filter := bson.M{"ID": id}
-	_, err := r.coll.DeleteOne(context.TODO(), filter)
+	_, err := r.Coll.DeleteOne(context.TODO(), filter)
 	return err
 }
 
-//func (r *MessageRepositoryDB) GetMessages(uuid string) error | dilemma | to put or not to put, that is the question
-
-func (r *MessageRepositoryDB) UpdateMessage(message *models.Message) error {
-	_, err := r.coll.UpdateByID(context.TODO(), message.ID, message.Content)
+func (r *MessageRepositoryDB) UpdateMessage(message models.Message) error {
+	_, err := r.Coll.UpdateByID(context.TODO(), message.ID, message.Content)
 	return err
+}
+
+func (r *MessageRepositoryDB) GetMessages(chat models.Chat) ([]models.Message, error) {
+	filter := bson.M{"UUID": chat.UUID}
+	cur, err := r.Coll.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(context.TODO())
+
+	var messages []models.Message
+	for cur.Next(context.TODO()) {
+		var msg models.Message
+		err := cur.Decode(msg)
+		if err != nil {
+			return nil, err
+		}
+		messages = append(messages, msg)
+	}
+
+	return messages, nil
 }

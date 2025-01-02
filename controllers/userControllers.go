@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	r = repository.NewUserRepositoryDB()
+	u = repository.NewUserRepositoryDB()
 )
 
 
@@ -26,7 +26,7 @@ func Register(c echo.Context) error {
 	}
 	user.Password = hash
 
-	err = r.CreateUser(user)
+	err = u.CreateUser(user)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"message": "cannot create user"})
 	}
@@ -35,7 +35,9 @@ func Register(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"message": "cannot generate jwt"})
 	}
-
+	
+	c.Set("username", user.Name)
+	c.Set("user_id", user.ID)
 	return c.JSON(http.StatusCreated, echo.Map{"message": "user successfully registered", "user": user, "token": token})
 
 }
@@ -48,7 +50,7 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"message": "invalid data"+err.Error()})
 	}
 
-	user, err := r.GetUser(userForm.Email)
+	user, err := u.GetUser(userForm.Email)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, echo.Map{"message": "user not found"})
 	}
@@ -62,6 +64,8 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"message": "cannot generate jwt"})
 	}
 
+	c.Set("username", user.Name)
+	c.Set("user_id", user.ID)
 	return c.JSON(http.StatusOK, echo.Map{"message": "user successfully logged in", "token": token})
 }
 

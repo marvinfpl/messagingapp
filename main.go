@@ -16,6 +16,7 @@ func main() {
 	//e.GET("/:uuid", )
 	e.POST("/register", c.Register)
 	e.POST("/login", c.Login)
+	e.GET("/sendmessage", c.SendMessage)
 
 	e.Logger.Fatal(e.Start(os.Getenv("PORT")))
 }
